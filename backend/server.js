@@ -7,7 +7,7 @@ const app = express();
 
 /// CORS configuration with specific origin
 const corsOptions = {
-  origin: ['http://localhost:3000'], 
+  origin: ['http://localhost:3000','https://readme-generator.vercel.app'], 
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
