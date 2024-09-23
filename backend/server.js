@@ -7,7 +7,7 @@ const app = express();
 
 /// CORS configuration with specific origin
 const corsOptions = {
-  origin: ['http://localhost:3000','ttps://readmegenie.vercel.app'], 
+  origin: ['http://localhost:3000','https://readmegenie.vercel.app'], 
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
