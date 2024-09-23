@@ -148,9 +148,6 @@ README Genai is an open-source project, and we welcome contributions! If you'd l
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 <div align="center">
   <br />
