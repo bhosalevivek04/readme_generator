@@ -116,7 +116,8 @@ const Home = () => {
           <h2 className="text-4xl font-bold mb-12">Our Contributors</h2>
           <div className="flex justify-center space-x-8 mb-12">
             {[
-              { name: 'Vivek', role: 'Software Developer', image: '/Vivek.jpg' },
+              { name: 'Vivek Bhosale', role: 'Software Developer', image: '/Vivek.jpg' },
+              { name: 'Navnath Jadhav', role: 'Full Stack Developer', image: '/Navnath.jpg' },
             ].map((contributor, index) => (
               <div key={index} className="flex flex-col items-center">
                 <img src={contributor.image} alt={contributor.name} className="w-24 h-24 rounded-full mb-4" />
@@ -138,7 +139,7 @@ const Home = () => {
             <a href="https://www.linkedin.com/in/vivek-bhosale-329746283/" className="text-green-300 hover:text-green-400 text-2xl"><FontAwesomeIcon icon={faLinkedin} /></a>
           </div>
           <p>
-            Crafted by <span className="text-green-300 font-semibold">Vivek Bhosale</span> with <span className="text-green-300 font-semibold">Typescript</span>
+            Crafted by <span className="text-green-300 font-semibold">Vivek and Navnath</span> with <span className="text-green-300 font-semibold">Typescript</span>
           </p>
         </div>
       </footer>
