@@ -135,6 +135,17 @@ To run README Genai, you'll need the following API keys:
       <a href="#" title="Design">🎨</a>
       <a href="#" title="Ideas">🤔</a>
     </td>
+    <td align="center">
+      <a href="https://github.com/Navnathjadhav08">
+        <img src="https://readme-genai.vercel.app/Navnath.jpg" width="100px;" alt="Navnath"/>
+        <br />
+        <sub><b>Navnath Jadhav</b></sub>
+      </a>
+      <br />
+      <a href="#" title="Code">💻</a>
+      <a href="#" title="Documentation">📖</a>
+      <a href="#" title="Ideas">🤔</a>
+    </td>
   </tr>
 </table>
 
