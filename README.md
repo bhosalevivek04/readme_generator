@@ -25,7 +25,7 @@ With README Genai, you can streamline your documentation process and showcase yo
 
 ## 🛠️ How We Built It
 
-README Genai was developed project by [Vivek] (https://github.com/bhosalevivek04) in few days, embracing the spirit of a hackathon. The project combines modern web technologies with AI to create a seamless user experience.
+README Genai was developed project by Vivek (https://github.com/bhosalevivek04) in few days, embracing the spirit of a hackathon. The project combines modern web technologies with AI to create a seamless user experience.
 
 ### Tech Stack
 
