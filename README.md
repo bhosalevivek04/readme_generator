@@ -15,7 +15,7 @@
 
 ## 🚀 Introduction
 
-README Genai is an AI-powered tool that simplifies the process of generating professional README files for your GitHub repositories. Created as a hackathon project in just one night, this application allows users to create comprehensive READMEs in three easy steps:
+README Genai is an AI-powered tool that simplifies the process of generating professional README files for your GitHub repositories. This application allows users to create comprehensive READMEs in three easy steps:
 
 1. Authenticate with GitHub
 2. Select your repository
