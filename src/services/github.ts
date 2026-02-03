@@ -5,6 +5,18 @@ const CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID;
 const REDIRECT_URI = import.meta.env.VITE_GITHUB_REDIRECT_URI;
 const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
+// Utility function to properly encode UTF-8 strings to Base64
+const encodeToBase64 = (str: string): string => {
+  // Use TextEncoder for proper UTF-8 encoding if available (modern browsers)
+  if (typeof TextEncoder !== 'undefined') {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str);
+    return btoa(String.fromCharCode(...data));
+  }
+  // Fallback for older browsers
+  return btoa(unescape(encodeURIComponent(str)));
+};
+
 export const authenticateWithGitHub = () => {
   const authUrl = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=repo`;
   window.location.href = authUrl;
@@ -271,7 +283,8 @@ export const updateReadme = async (repoFullName: string, content: string): Promi
     });
 
     const { sha } = response.data;
-    const encodedContent = btoa(content);
+    // Properly encode UTF-8 content to Base64
+    const encodedContent = encodeToBase64(content);
 
     await axios.put(
       `${GITHUB_API_URL}/repos/${owner}/${repo}/contents/README.md`,
@@ -294,8 +307,17 @@ export const commitReadme = async (repoFullName: string, content: string): Promi
   const token = localStorage.getItem('github_token');
   if (!token) throw new Error('No GitHub token found');
 
+  // Validate inputs
+  if (!repoFullName || !content) {
+    throw new Error('Repository name and content are required');
+  }
+
   try {
     const [owner, repo] = repoFullName.split('/');
+    if (!owner || !repo) {
+      throw new Error('Invalid repository name format');
+    }
+
     let sha: string | undefined;
 
     // Check if README.md exists
@@ -306,14 +328,16 @@ export const commitReadme = async (repoFullName: string, content: string): Promi
       sha = response.data.sha;
     } catch (error) {
       // If README.md doesn't exist, sha will remain undefined
+      // This is expected for new repositories
     }
 
-    const encodedContent = btoa(content);
+    // Properly encode UTF-8 content to Base64
+    const encodedContent = encodeToBase64(content);
 
     await axios.put(
       `${GITHUB_API_URL}/repos/${owner}/${repo}/contents/README.md`,
       {
-        message: sha ? 'Update README.md' : 'Create README.md',
+        message: sha ? 'Update README.md via AI Generator' : 'Create README.md via AI Generator',
         content: encodedContent,
         sha,
       },
@@ -323,6 +347,18 @@ export const commitReadme = async (repoFullName: string, content: string): Promi
     );
   } catch (error) {
     console.error('Error committing README:', error);
+    
+    // Provide more specific error messages
+    if (axios.isAxiosError(error)) {
+      if (error.response?.status === 403) {
+        throw new Error('Permission denied. Please check repository access rights.');
+      } else if (error.response?.status === 404) {
+        throw new Error('Repository not found or access denied.');
+      } else if (error.response?.status === 422) {
+        throw new Error('Invalid content or repository state. Please try again.');
+      }
+    }
+    
     throw new Error('Failed to commit README');
   }
 };
