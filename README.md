@@ -15,7 +15,7 @@
 
 ## 🚀 Introduction
 
-README Genai is an AI-powered tool that simplifies the process of generating professional README files for your GitHub repositories. Created as a hackathon project in just one night, this application allows users to create comprehensive READMEs in three easy steps:
+README Genai is an AI-powered tool that simplifies the process of generating professional README files for your GitHub repositories. This application allows users to create comprehensive READMEs in three easy steps:
 
 1. Authenticate with GitHub
 2. Select your repository
@@ -25,7 +25,7 @@ With README Genai, you can streamline your documentation process and showcase yo
 
 ## 🛠️ How We Built It
 
-README Genai was developed project by [Vivek] (https://github.com/bhosalevivek04) in few days, embracing the spirit of a hackathon. The project combines modern web technologies with AI to create a seamless user experience.
+README Genai was developed project by Vivek (https://github.com/bhosalevivek04) in few days, embracing the spirit of a hackathon. The project combines modern web technologies with AI to create a seamless user experience.
 
 ### Tech Stack
 
@@ -133,6 +133,17 @@ To run README Genai, you'll need the following API keys:
       <br />
       <a href="#" title="Code">💻</a>
       <a href="#" title="Design">🎨</a>
+      <a href="#" title="Ideas">🤔</a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Navnathjadhav08">
+        <img src="https://readme-genai.vercel.app/Navnath.jpg" width="100px;" alt="Navnath"/>
+        <br />
+        <sub><b>Navnath Jadhav</b></sub>
+      </a>
+      <br />
+      <a href="#" title="Code">💻</a>
+      <a href="#" title="Documentation">📖</a>
       <a href="#" title="Ideas">🤔</a>
     </td>
   </tr>
