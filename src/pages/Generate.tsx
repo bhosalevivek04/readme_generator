@@ -56,6 +56,10 @@ const Generate = () => {
     fetchRepos();
   }, []);
 
+  const handleReadmeUpdate = (newContent: string) => {
+    setGeneratedReadme(newContent);
+  };
+
   return (
     <div className="bg-gray-900 text-white min-h-screen">
       <Navbar />
@@ -70,7 +74,13 @@ const Generate = () => {
         </div>
         {step === 1 && <RepoSelector repos={repos} onSelect={handleRepoSelect} />}
         {step === 2 && <ReadmeGenerator repo={selectedRepo} onGenerate={handleReadmeGenerated} />}
-        {step === 3 && <ReadmeViewer readme={generatedReadme} repoFullName={selectedRepo} />}
+        {step === 3 && (
+          <ReadmeViewer 
+            readme={generatedReadme} 
+            repoFullName={selectedRepo} 
+            onReadmeUpdate={handleReadmeUpdate}
+          />
+        )}
       </div>
     </div>
   );

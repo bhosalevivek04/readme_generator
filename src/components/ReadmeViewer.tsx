@@ -3,21 +3,25 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import Button from './Button';
-import { faCopy, faDownload, faRedo, faCodeCommit } from '@fortawesome/free-solid-svg-icons';
+import { faCopy, faDownload, faRedo, faCodeCommit, faEdit, faSave, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { commitReadme } from '../services/github';
 import 'highlight.js/styles/github-dark.css';
 
 interface ReadmeViewerProps {
   readme: string;
   repoFullName: string;
+  onReadmeUpdate?: (newContent: string) => void;
 }
 
-const ReadmeViewer: React.FC<ReadmeViewerProps> = ({ readme, repoFullName }) => {
+const ReadmeViewer: React.FC<ReadmeViewerProps> = ({ readme, repoFullName, onReadmeUpdate }) => {
   const [activeTab, setActiveTab] = useState<'preview' | 'raw'>('preview');
   const [isCommitting, setIsCommitting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedContent, setEditedContent] = useState(readme);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(readme);
+    const contentToCopy = isEditing ? editedContent : readme;
+    navigator.clipboard.writeText(contentToCopy);
     // Show a better notification
     const notification = document.createElement('div');
     notification.textContent = '✓ README copied to clipboard!';
@@ -29,7 +33,8 @@ const ReadmeViewer: React.FC<ReadmeViewerProps> = ({ readme, repoFullName }) => 
   };
 
   const handleDownload = () => {
-    const blob = new Blob([readme], { type: 'text/markdown' });
+    const contentToDownload = isEditing ? editedContent : readme;
+    const blob = new Blob([contentToDownload], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -45,10 +50,52 @@ const ReadmeViewer: React.FC<ReadmeViewerProps> = ({ readme, repoFullName }) => 
     window.location.reload();
   };
 
+  const handleEdit = () => {
+    setIsEditing(true);
+    setEditedContent(readme);
+    setActiveTab('raw'); // Switch to raw mode for editing
+  };
+
+  const handleSaveEdit = () => {
+    setIsEditing(false);
+    // Update the parent component with the edited content
+    if (onReadmeUpdate) {
+      onReadmeUpdate(editedContent);
+    }
+    
+    // Show save notification
+    const notification = document.createElement('div');
+    notification.textContent = '✓ Changes saved successfully!';
+    notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+    document.body.appendChild(notification);
+    setTimeout(() => {
+      document.body.removeChild(notification);
+    }, 2000);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditedContent(readme); // Reset to original content
+  };
+
+  // Handle keyboard shortcuts
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (isEditing) {
+      if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        handleSaveEdit();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        handleCancelEdit();
+      }
+    }
+  };
+
   const handleCommit = async () => {
     try {
       setIsCommitting(true);
-      await commitReadme(repoFullName, readme);
+      const contentToCommit = isEditing ? editedContent : readme;
+      await commitReadme(repoFullName, contentToCommit);
       
       // Show success notification
       const notification = document.createElement('div');
@@ -74,11 +121,15 @@ const ReadmeViewer: React.FC<ReadmeViewerProps> = ({ readme, repoFullName }) => 
     }
   };
 
+  const currentContent = isEditing ? editedContent : readme;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Generated README</h2>
+          <h2 className="text-2xl font-bold">
+            {isEditing ? 'Edit README' : 'Generated README'}
+          </h2>
           <p className="text-gray-400 text-sm mt-1">Repository: {repoFullName}</p>
         </div>
         
@@ -86,9 +137,12 @@ const ReadmeViewer: React.FC<ReadmeViewerProps> = ({ readme, repoFullName }) => 
         <div className="flex bg-gray-800 rounded-lg p-1">
           <button
             onClick={() => setActiveTab('preview')}
+            disabled={isEditing}
             className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-              activeTab === 'preview' 
+              activeTab === 'preview' && !isEditing
                 ? 'bg-green-400 text-gray-900 font-medium' 
+                : isEditing
+                ? 'text-gray-500 cursor-not-allowed'
                 : 'text-gray-300 hover:text-white'
             }`}
           >
@@ -98,20 +152,20 @@ const ReadmeViewer: React.FC<ReadmeViewerProps> = ({ readme, repoFullName }) => 
           <button
             onClick={() => setActiveTab('raw')}
             className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-              activeTab === 'raw' 
+              activeTab === 'raw' || isEditing
                 ? 'bg-green-400 text-gray-900 font-medium' 
                 : 'text-gray-300 hover:text-white'
             }`}
           >
             <span className="text-sm">📝</span>
-            <span>Raw</span>
+            <span>{isEditing ? 'Edit' : 'Raw'}</span>
           </button>
         </div>
       </div>
 
       {/* Content Area */}
       <div className="bg-gray-800 rounded-lg overflow-hidden">
-        {activeTab === 'preview' ? (
+        {activeTab === 'preview' && !isEditing ? (
           <div className="p-6 prose prose-invert prose-green max-w-none">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
@@ -141,14 +195,40 @@ const ReadmeViewer: React.FC<ReadmeViewerProps> = ({ readme, repoFullName }) => 
                 td: ({children}) => <td className="border border-gray-600 px-4 py-2">{children}</td>,
               }}
             >
-              {readme}
+              {currentContent}
             </ReactMarkdown>
           </div>
         ) : (
           <div className="p-4">
-            <pre className="whitespace-pre-wrap text-sm text-gray-300 font-mono leading-relaxed">
-              {readme}
-            </pre>
+            {isEditing ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-green-400">Edit README Content</h3>
+                  <div className="flex space-x-2">
+                    <Button onClick={handleSaveEdit} icon={faSave} color="green">
+                      Save Changes
+                    </Button>
+                    <Button onClick={handleCancelEdit} icon={faTimes} color="yellow">
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+                <textarea
+                  value={editedContent}
+                  onChange={(e) => setEditedContent(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="w-full h-96 p-4 bg-gray-900 border border-gray-600 rounded-lg text-gray-300 font-mono text-sm leading-relaxed resize-none focus:border-green-400 focus:outline-none"
+                  placeholder="Edit your README content here..."
+                />
+                <div className="text-sm text-gray-400">
+                  <p>💡 Tip: Use Markdown syntax for formatting. Press Ctrl+S to save or Esc to cancel.</p>
+                </div>
+              </div>
+            ) : (
+              <pre className="whitespace-pre-wrap text-sm text-gray-300 font-mono leading-relaxed">
+                {currentContent}
+              </pre>
+            )}
           </div>
         )}
       </div>
@@ -161,7 +241,12 @@ const ReadmeViewer: React.FC<ReadmeViewerProps> = ({ readme, repoFullName }) => 
         <Button onClick={handleDownload} icon={faDownload} color="blue">
           Download README.md
         </Button>
-        <Button onClick={handleRegenerate} icon={faRedo} color="yellow">
+        {!isEditing ? (
+          <Button onClick={handleEdit} icon={faEdit} color="yellow">
+            Edit README
+          </Button>
+        ) : null}
+        <Button onClick={handleRegenerate} icon={faRedo} color="purple">
           Generate New README
         </Button>
         <Button 
@@ -178,23 +263,41 @@ const ReadmeViewer: React.FC<ReadmeViewerProps> = ({ readme, repoFullName }) => 
       <div className="bg-gray-800 rounded-lg p-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
           <div>
-            <div className="text-2xl font-bold text-green-400">{readme.split('\n').length}</div>
+            <div className="text-2xl font-bold text-green-400">{currentContent.split('\n').length}</div>
             <div className="text-sm text-gray-400">Lines</div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-blue-400">{readme.split(' ').length}</div>
+            <div className="text-2xl font-bold text-blue-400">{currentContent.split(' ').length}</div>
             <div className="text-sm text-gray-400">Words</div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-purple-400">{readme.length}</div>
+            <div className="text-2xl font-bold text-purple-400">{currentContent.length}</div>
             <div className="text-sm text-gray-400">Characters</div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-yellow-400">{(readme.length / 1024).toFixed(1)}KB</div>
+            <div className="text-2xl font-bold text-yellow-400">{(currentContent.length / 1024).toFixed(1)}KB</div>
             <div className="text-sm text-gray-400">Size</div>
           </div>
         </div>
       </div>
+
+      {/* Edit Mode Info */}
+      {isEditing && (
+        <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
+          <div className="flex items-start space-x-3">
+            <div className="text-blue-400 mt-1">ℹ️</div>
+            <div>
+              <h4 className="text-blue-400 font-semibold mb-2">Edit Mode Active</h4>
+              <ul className="text-sm text-gray-300 space-y-1">
+                <li>• Make your changes in the text area above</li>
+                <li>• Click "Save Changes" to apply your edits</li>
+                <li>• Use "Cancel" to discard changes and return to the original</li>
+                <li>• Preview is disabled while editing - save to see the rendered result</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
