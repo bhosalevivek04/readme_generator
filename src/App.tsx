@@ -12,8 +12,7 @@ function AuthCallback() {
     const code = new URLSearchParams(window.location.search).get('code');
     if (code) {
       handleAuthCallback(code)
-        .then((token) => {
-          console.log('Token received:', token);
+        .then(() => {
           navigate('/generate');
         })
         .catch((error) => {
