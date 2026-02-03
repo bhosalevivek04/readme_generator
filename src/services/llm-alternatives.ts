@@ -5,7 +5,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const config = {
   google: {
     apiKey: import.meta.env.VITE_GOOGLE_API_KEY,
-    model: "gemini-pro"
+    model: "gemini-3-flash-preview"
   },
   // Add other providers as needed
   openai: {
@@ -13,9 +13,6 @@ const config = {
     model: "gpt-3.5-turbo"
   }
 };
-
-// Rate limiting helper
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const generateReadmeWithFallback = async (repoContent: string): Promise<string> => {
   // Try Google Gemini first
@@ -58,7 +55,7 @@ ${repoContent}
 Please create a well-structured README with proper markdown formatting.`;
       
       const result = await model.generateContent(prompt);
-      const response = await result.response;
+      const response = result.response;
       return response.text();
     } catch (error: any) {
       console.warn(`Model ${modelName} failed:`, error.message);
@@ -74,7 +71,6 @@ Please create a well-structured README with proper markdown formatting.`;
 // Fallback: Generate a template-based README when APIs are unavailable
 const generateWithTemplate = (repoContent: string): string => {
   // Extract basic info from repo content
-  const lines = repoContent.split('\n');
   const packageJsonMatch = repoContent.match(/"name":\s*"([^"]+)"/);
   const projectName = packageJsonMatch ? packageJsonMatch[1] : 'Project';
   
