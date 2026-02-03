@@ -9,6 +9,11 @@ interface Repo {
   id: number;
   full_name: string;
   description: string;
+  language: string;
+  stargazers_count: number;
+  forks_count: number;
+  updated_at: string;
+  private: boolean;
 }
 
 const Generate = () => {
@@ -30,7 +35,6 @@ const Generate = () => {
   useEffect(() => {
     const fetchRepos = async () => {
       const token = localStorage.getItem('github_token');
-      console.log('Token from localStorage:', token);
       
       if (!token) {
         console.error('No GitHub token found');
@@ -39,9 +43,7 @@ const Generate = () => {
       }
 
       try {
-        console.log('Fetching repos...');
         const fetchedRepos = await getUserRepos();
-        console.log('Fetched repos:', fetchedRepos);
         setRepos(fetchedRepos);
       } catch (error) {
         console.error('Failed to fetch repositories:', error);

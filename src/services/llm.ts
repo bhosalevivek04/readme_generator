@@ -28,8 +28,6 @@ export const generateReadme = async (repoContent: string): Promise<string> => {
   for (const modelName of availableModels) {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        console.log(`Trying model: ${modelName}, attempt: ${attempt}`);
-        
         // Use the newer model configuration approach
         const model = genAI.getGenerativeModel({ 
           model: modelName,
@@ -41,29 +39,42 @@ export const generateReadme = async (repoContent: string): Promise<string> => {
           }
         });
 
-        const prompt = `Generate a comprehensive, professional README.md file for the following GitHub repository. 
+        const prompt = `You are an expert technical writer. Generate a comprehensive, professional README.md file for the following GitHub repository.
 
-Please include:
-- Project title and description
-- Installation instructions
-- Usage examples
-- Features list
-- Technologies used
-- Contributing guidelines
-- License information
-
-Repository content:
+REPOSITORY ANALYSIS:
 ${repoContent}
 
-Generate a well-structured README in markdown format:`;
+INSTRUCTIONS:
+1. Create a well-structured README with proper markdown formatting
+2. Include appropriate sections based on the project type and detected technologies
+3. Write clear, concise descriptions that would help developers understand and use this project
+4. Include installation instructions specific to the detected technologies
+5. Add usage examples if you can infer how the project works
+6. Include contribution guidelines and other standard sections
+7. Make it professional but approachable
+8. Use emojis sparingly and appropriately
+9. Ensure all code blocks have proper language syntax highlighting
+
+REQUIRED SECTIONS (adapt based on project type):
+- Project title and description
+- Features (if applicable)
+- Technologies used
+- Prerequisites
+- Installation
+- Usage/Getting Started
+- API documentation (if it's an API project)
+- Contributing
+- License
+- Contact/Support
+
+Generate a complete, production-ready README.md:`;
 
         const result = await model.generateContent(prompt);
-        const response = await result.response;
+        const response = result.response;
         const text = response.text();
 
         // Record successful usage
         quotaManager.recordUsage(modelName);
-        console.log(`Successfully generated README with model: ${modelName}`);
         return text;
         
       } catch (error: any) {
@@ -73,17 +84,14 @@ Generate a well-structured README in markdown format:`;
         if (error?.message?.includes('429') || error?.message?.includes('RATE_LIMIT_EXCEEDED')) {
           if (attempt < maxRetries) {
             const delayTime = baseDelay * attempt;
-            console.log(`Rate limited on ${modelName}. Retrying in ${delayTime / 1000} seconds...`);
             await delay(delayTime);
             continue;
           } else {
-            console.log(`Rate limit exceeded for ${modelName}, trying next model...`);
             break; // Try next model
           }
         }
         
         // For other errors, try next model immediately
-        console.log(`Error with ${modelName}, trying next model...`);
         break;
       }
     }
