@@ -13,8 +13,32 @@ const encodeToBase64 = (str: string): string => {
     const data = encoder.encode(str);
     return btoa(String.fromCharCode(...data));
   }
-  // Fallback for older browsers
-  return btoa(unescape(encodeURIComponent(str)));
+  
+  // Fallback: Convert string to UTF-8 bytes manually
+  const utf8Bytes: number[] = [];
+  for (let i = 0; i < str.length; i++) {
+    const code = str.charCodeAt(i);
+    if (code < 0x80) {
+      utf8Bytes.push(code);
+    } else if (code < 0x800) {
+      utf8Bytes.push(0xc0 | (code >> 6), 0x80 | (code & 0x3f));
+    } else if (code < 0xd800 || code >= 0xe000) {
+      utf8Bytes.push(0xe0 | (code >> 12), 0x80 | ((code >> 6) & 0x3f), 0x80 | (code & 0x3f));
+    } else {
+      // Surrogate pair
+      i++;
+      const hi = code;
+      const lo = str.charCodeAt(i);
+      const codePoint = 0x10000 + (((hi & 0x3ff) << 10) | (lo & 0x3ff));
+      utf8Bytes.push(
+        0xf0 | (codePoint >> 18),
+        0x80 | ((codePoint >> 12) & 0x3f),
+        0x80 | ((codePoint >> 6) & 0x3f),
+        0x80 | (codePoint & 0x3f)
+      );
+    }
+  }
+  return btoa(String.fromCharCode(...utf8Bytes));
 };
 
 export const authenticateWithGitHub = () => {
@@ -327,8 +351,15 @@ export const commitReadme = async (repoFullName: string, content: string): Promi
       });
       sha = response.data.sha;
     } catch (error) {
-      // If README.md doesn't exist, sha will remain undefined
-      // This is expected for new repositories
+      // If README.md doesn't exist (404), sha will remain undefined
+      // This is expected for new repositories - suppress the 404 error
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        // README.md doesn't exist, we'll create it
+        sha = undefined;
+      } else {
+        // For other errors, we might want to log them
+        console.warn('Unexpected error checking README existence:', error);
+      }
     }
 
     // Properly encode UTF-8 content to Base64

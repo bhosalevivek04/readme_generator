@@ -105,17 +105,27 @@ const ReadmeViewer: React.FC<ReadmeViewerProps> = ({ readme, repoFullName, onRea
       setTimeout(() => {
         document.body.removeChild(notification);
       }, 3000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error committing README:', error);
       
-      // Show error notification
+      // Show specific error message based on the error type
+      let errorMessage = '❌ Failed to commit README. Please try again.';
+      
+      if (error.message.includes('Permission denied')) {
+        errorMessage = '❌ Permission denied. Please check repository access rights.';
+      } else if (error.message.includes('Repository not found')) {
+        errorMessage = '❌ Repository not found or access denied.';
+      } else if (error.message.includes('Invalid content')) {
+        errorMessage = '❌ Invalid content format. Please check your README.';
+      }
+      
       const notification = document.createElement('div');
-      notification.textContent = '❌ Failed to commit README. Please try again.';
+      notification.textContent = errorMessage;
       notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
       document.body.appendChild(notification);
       setTimeout(() => {
         document.body.removeChild(notification);
-      }, 3000);
+      }, 4000);
     } finally {
       setIsCommitting(false);
     }
